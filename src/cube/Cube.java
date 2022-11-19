@@ -5,19 +5,15 @@
  */
 package cube;
 
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
+
 import java.util.Scanner;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.swing.JFrame;
-import javax.vecmath.Quat4d;
-import javax.vecmath.Vector3d;
 import com.fazecast.jSerialComm.SerialPort;
-import com.sun.j3d.utils.geometry.ColorCube;
-import com.sun.j3d.utils.universe.SimpleUniverse;
+
+import java.sql.*;
+import java.util.Properties;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  *
@@ -27,51 +23,8 @@ public class Cube {
 
     public static void main(String[] args) {
 
-        JFrame frame = new JFrame("Sensor Fusion Visual Test Program");
-        Canvas3D canvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
-        SimpleUniverse universe = new SimpleUniverse(canvas);
-        BranchGroup group = new BranchGroup();
-        ColorCube cube = new ColorCube(0.3);
-
-        TransformGroup transformGroup = new TransformGroup();
-        transformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        transformGroup.addChild(cube);
-
-        universe.getViewingPlatform().setNominalViewingTransform();
-        group.addChild(transformGroup);
-        universe.addBranchGraph(group);
-
-        frame.add(canvas);
-        frame.setSize(800, 600);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-
-        // Connect to the named pipe
-//        File myfifo = new File("/tmp/myfifo");
-        //       try {
-//            Scanner myReader = new Scanner(myfifo);
-//            while (myReader.hasNextLine()) {
-//                String line = myReader.nextLine();
-        //               String[] token = line.split(",");
-        //               double w = Double.parseDouble(token[2]);
-//                double x = -Double.parseDouble(token[6]);
-//                double y = -Double.parseDouble(token[7]);
-//                double z = -Double.parseDouble(token[8]);
-        //               double ax = Double.parseDouble(token[3]);
-//                double ay = Double.parseDouble(token[4]);
-//                double az = Double.parseDouble(token[5]);
-        //               System.out.println(String.format("w = %+7.3f     x = %+7.3f     y = %+7.3f     z = %+7.3f", w, x, y, z));
-//                Quat4d quaternion = new Quat4d((w * 0.05), x, y, z);
-//                Vector3d vector = new Vector3d((ax * 0.02), (ay * 0.02), (az * 0.02));
-//                transformGroup.setTransform(new Transform3D(quaternion, vector, 1.0));
-//            }
-        //       } catch (FileNotFoundException e) {
-//            System.err.println("Unable to read file data. Exiting.");
-//            e.printStackTrace();
-//        }
-//    }
         //serial connection
-        SerialPort port = SerialPort.getCommPort("ttyACM0");
+        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
         port.setBaudRate(115200);
         port.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 1, 1);
         if (port.openPort() == false) {
@@ -79,33 +32,70 @@ public class Cube {
             System.exit(1);
         }
 
-        Scanner s = new Scanner(port.getInputStream());
+        Properties connConfig = new Properties();
+        connConfig.setProperty("user", "minty");
+        connConfig.setProperty("password", "");
+
+        Scanner s = new Scanner(port.getInputStream()); // eat first line
+        s = new Scanner(port.getInputStream());
         System.err.println("Scanner.");
         while (s.hasNextLine()) {
-            double w = 0.0;
-            double x = 0.0;
-            double y = 0.0;
-            double z = 0.0;
+                   String fftd = "";
             try {
+
                 String line = s.nextLine();
                 String[] token = line.split(",");
-//              multiply x/y / z by - 1 to swap frames of reference
-                if (token[0].equals("1")) {
-                    w = Double.parseDouble(token[2]);
-                    x = -Double.parseDouble(token[3]);
-                    y = -Double.parseDouble(token[4]);
-                    z = -Double.parseDouble(token[5]);
-                    double ax = Double.parseDouble(token[6]);
-                    double ay = Double.parseDouble(token[7]);
-                    double az = Double.parseDouble(token[8]);
+//                System.err.println(token[1]);
 
-                    Quat4d quaternion = new Quat4d(w, x, y, z);
-                    Vector3d vector = new Vector3d((az * 0.02), (ay * 0.02), (az * 0.02));
-                    transformGroup.setTransform(new Transform3D(quaternion, vector, 1.0));
+                if (token[0].equals("  1")) {
+                    System.out.println(String.format("dtype = %3s  device = %s : %s", token[0], token[1], line));
+                    token[2] = "";
                 }
-//              the inverse cosine of w gives you the pitch *if* you normalize the quaternion with x and z being zero
-                double pitch = Math.acos(w / Math.sqrt(w * w + y * y)) * 2.0 - (Math.PI / 2.0);
-                System.out.println(String.format("w = %+7.4f  x = %+7.4f  y = %+7.4f  z = %+7.4f  pitch = %+5.3f", w, x, y, z, pitch));
+                if (token[0].equals("  2")) {
+                    System.out.println(String.format("dtype = %3s  device = %s cpu = %s : %s", token[0], token[1], token[2], line));
+                }
+                if (token[0].equals("  8")) {
+                    System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
+                    fftd=token[2];
+                    token[2] = "";
+                }
+                if (token[0].equals("  9")) {
+                    System.out.println(String.format("dtype = %3s  device = %s hit high = %s : %s", token[0], token[1], token[2], line));
+                    fftd=token[2];
+                    token[2] = "";
+                }
+
+                try {
+                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.1.1.172/", connConfig);
+
+                    // Prepare INSERT Statement to Add IMU data
+                    try ( PreparedStatement prep = conn.prepareStatement(
+                            "INSERT INTO hits.imu (dtype, device, cpu, str,fft) VALUES (?, ?, ?, ?, ?)",
+                            Statement.RETURN_GENERATED_KEYS)) {
+                        // Add Contact
+                        prep.setString(1, token[0]);
+                        prep.setString(2, token[1]);
+                        prep.setString(3, token[2]);
+                        prep.setString(4, line);
+                        prep.setString(5, fftd);
+                        prep.addBatch();
+
+                        // Execute Prepared Statements in Batch
+                        System.out.println("Batch Counts");
+                        int[] updateCounts = prep.executeBatch();
+                        for (int count : updateCounts) {
+                            // Print Counts
+                            System.out.println(count);
+                        }
+                    }
+
+                } catch (SQLException ex) {
+                    // handle any errors
+                    System.out.println("SQLException: " + ex.getMessage());
+                    System.out.println("SQLState: " + ex.getSQLState());
+                    System.out.println("VendorError: " + ex.getErrorCode());
+                }
+
             } catch (Exception e) {
             }
         }
