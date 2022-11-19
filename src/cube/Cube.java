@@ -5,7 +5,6 @@
  */
 package cube;
 
-
 import java.util.Scanner;
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -40,7 +39,7 @@ public class Cube {
         s = new Scanner(port.getInputStream());
         System.err.println("Scanner.");
         while (s.hasNextLine()) {
-                   String fftd = "";
+            String fftd = "";
             try {
 
                 String line = s.nextLine();
@@ -56,12 +55,12 @@ public class Cube {
                 }
                 if (token[0].equals("  8")) {
                     System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
-                    fftd=token[2];
+                    fftd = token[2];
                     token[2] = "";
                 }
                 if (token[0].equals("  9")) {
                     System.out.println(String.format("dtype = %3s  device = %s hit high = %s : %s", token[0], token[1], token[2], line));
-                    fftd=token[2];
+                    fftd = token[2];
                     token[2] = "";
                 }
 
@@ -81,11 +80,11 @@ public class Cube {
                         prep.addBatch();
 
                         // Execute Prepared Statements in Batch
-                        System.out.println("Batch Counts");
+//                        System.out.println("Batch Counts");
                         int[] updateCounts = prep.executeBatch();
                         for (int count : updateCounts) {
                             // Print Counts
-                            System.out.println(count);
+//                            System.out.println(count);
                         }
                     }
 
