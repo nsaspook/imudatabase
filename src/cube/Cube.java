@@ -87,7 +87,7 @@ public class Cube {
 //                            System.out.println(count);
                         }
                     }
-
+                    conn.close();
                 } catch (SQLException ex) {
                     // handle any errors
                     System.out.println("SQLException: " + ex.getMessage());
