@@ -65,7 +65,7 @@ public class Cube {
                 }
 
                 try {
-                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.1.1.172/", connConfig);
+                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.5.2.94/", connConfig);
 
                     // Prepare INSERT Statement to Add IMU data
                     try ( PreparedStatement prep = conn.prepareStatement(
