@@ -71,7 +71,7 @@ public class Cube {
                     try ( PreparedStatement prep = conn.prepareStatement(
                             "INSERT INTO hits.imu (dtype, device, cpu, str,fft) VALUES (?, ?, ?, ?, ?)",
                             Statement.RETURN_GENERATED_KEYS)) {
-                        // Add Contact
+                        // Add IMU packet data
                         prep.setString(1, token[0]);
                         prep.setString(2, token[1]);
                         prep.setString(3, token[2]);
