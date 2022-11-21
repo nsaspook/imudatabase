@@ -10,9 +10,9 @@ import com.fazecast.jSerialComm.SerialPort;
 
 import java.sql.*;
 import java.util.Properties;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+//import java.sql.Connection;
+//import java.sql.DriverManager;
+//import java.sql.SQLException;
 
 /**
  *
@@ -36,10 +36,12 @@ public class Cube {
         connConfig.setProperty("password", "");
 
         Scanner s = new Scanner(port.getInputStream()); // eat first line
+        System.err.println(s);
         s = new Scanner(port.getInputStream());
-        System.err.println("Scanner.");
+        System.err.println("Scanner running.");
         while (s.hasNextLine()) {
             String fftd = "";
+            String tstamp = "";
             try {
 
                 String line = s.nextLine();
@@ -47,7 +49,8 @@ public class Cube {
 //                System.err.println(token[1]);
 
                 if (token[0].equals("  1")) {
-                    System.out.println(String.format("dtype = %3s  device = %s : %s", token[0], token[1], line));
+                    tstamp = token[11];
+                    System.out.println(String.format("dtype = %3s  device = %s : %s", token[0], token[1], line, tstamp));
                     token[2] = "";
                 }
                 if (token[0].equals("  2")) {
@@ -69,7 +72,7 @@ public class Cube {
 
                     // Prepare INSERT Statement to Add IMU data
                     try ( PreparedStatement prep = conn.prepareStatement(
-                            "INSERT INTO hits.imu (dtype, device, cpu, str,fft) VALUES (?, ?, ?, ?, ?)",
+                            "INSERT INTO hits.imu (dtype, device, cpu, str,fft,tstamp) VALUES (?, ?, ?, ?, ?, ?)",
                             Statement.RETURN_GENERATED_KEYS)) {
                         // Add IMU packet data
                         prep.setString(1, token[0]);
@@ -77,10 +80,9 @@ public class Cube {
                         prep.setString(3, token[2]);
                         prep.setString(4, line);
                         prep.setString(5, fftd);
+                        prep.setString(6, tstamp);
                         prep.addBatch();
 
-                        // Execute Prepared Statements in Batch
-//                        System.out.println("Batch Counts");
                         int[] updateCounts = prep.executeBatch();
                         for (int count : updateCounts) {
                             // Print Counts
