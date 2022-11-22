@@ -36,7 +36,6 @@ public class Cube {
         connConfig.setProperty("password", "");
 
         Scanner s = new Scanner(port.getInputStream()); // eat first line
-        System.err.println(s);
         s = new Scanner(port.getInputStream());
         System.err.println("Scanner running.");
         while (s.hasNextLine()) {
