@@ -23,8 +23,10 @@ public class Cube {
     public static void main(String[] args) {
 
         //serial connection
-        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
-        port.setBaudRate(115200);
+//        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
+//        port.setBaudRate(115200);
+        SerialPort port = SerialPort.getCommPort("ttyUSB0"); // USB serial connection
+        port.setBaudRate(230400);
         port.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 1, 1);
         if (port.openPort() == false) {
             System.err.println("Unable to open the serial port. Exiting.");
@@ -36,12 +38,13 @@ public class Cube {
         connConfig.setProperty("password", "");
 
         Scanner s = new Scanner(port.getInputStream()); // eat first line
-        System.err.println(s);
+//        System.err.println(s);
         s = new Scanner(port.getInputStream());
         System.err.println("Scanner running.");
         while (s.hasNextLine()) {
             String fftd = "";
             String tstamp = "";
+            String hosts = "";
             try {
 
                 String line = s.nextLine();
@@ -54,7 +57,9 @@ public class Cube {
                     token[2] = "";
                 }
                 if (token[0].equals("  2")) {
-                    System.out.println(String.format("dtype = %3s  device = %s cpu = %s : %s", token[0], token[1], token[2], line));
+                    System.out.println(String.format("dtype = %3s  device = %s cpu = %s host = %s : %s", token[0], token[1], token[2], token[6], line));
+                    hosts = token[6];
+                    token[6] = "";
                 }
                 if (token[0].equals("  8")) {
                     System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
@@ -68,11 +73,11 @@ public class Cube {
                 }
 
                 try {
-                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.5.2.94/", connConfig);
+                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.1.1.172/", connConfig);
 
                     // Prepare INSERT Statement to Add IMU data
                     try ( PreparedStatement prep = conn.prepareStatement(
-                            "INSERT INTO hits.imu (dtype, device, cpu, str,fft,tstamp) VALUES (?, ?, ?, ?, ?, ?)",
+                            "INSERT INTO hits.imu (dtype, device, cpu, str, fft, tstamp, host) VALUES (?, ?, ?, ?, ?, ?, ?)",
                             Statement.RETURN_GENERATED_KEYS)) {
                         // Add IMU packet data
                         prep.setString(1, token[0]);
@@ -81,6 +86,7 @@ public class Cube {
                         prep.setString(4, line);
                         prep.setString(5, fftd);
                         prep.setString(6, tstamp);
+                        prep.setString(7, hosts);
                         prep.addBatch();
 
                         int[] updateCounts = prep.executeBatch();
