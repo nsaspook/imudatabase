@@ -1,0 +1,22 @@
+#!/bin/bash
+
+mapfile -t devs < <(
+    /bin/ls -l /sys/class/tty |
+        sed -ne '
+            /\/virtual\//d;
+            s@^.* \(tty[^ ]\+\) -> .*@\1@p
+        '
+)
+ans=yes hfile=/usr/include/asm-generic/termbits.h
+mapfile -t bauds < <(
+    sed -nr 's/^#define\s+B([0-9]{2,})\s+.*/\1/p' <$hfile
+)
+for tty in ${devs[@]};do
+    echo "[ $tty ]"
+    column < <(
+        for rate in ${bauds[@]};do
+            stty -F /dev/$tty $rate &>/dev/null
+            printf '%8d %-3s\n' $rate ${ans[$?]:-no}
+        done
+    )
+done
