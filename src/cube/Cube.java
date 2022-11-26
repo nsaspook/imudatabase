@@ -37,8 +37,7 @@ public class Cube {
         connConfig.setProperty("user", "minty");
         connConfig.setProperty("password", "");
 
-        Scanner s = new Scanner(port.getInputStream()); // eat first line
-//        System.err.println(s);
+        Scanner s = new Scanner(port.getInputStream());
         s = new Scanner(port.getInputStream());
         System.err.println("Scanner running.");
         while (s.hasNextLine()) {
@@ -46,10 +45,8 @@ public class Cube {
             String tstamp = "";
             String hosts = "";
             try {
-
                 String line = s.nextLine();
                 String[] token = line.split(",");
-//                System.err.println(token[1]);
 
                 if (token[0].equals("  1")) {
                     tstamp = token[11];
