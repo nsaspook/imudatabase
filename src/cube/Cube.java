@@ -23,10 +23,10 @@ public class Cube {
     public static void main(String[] args) {
 
         //serial connection
-//        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
-//        port.setBaudRate(115200);
-        SerialPort port = SerialPort.getCommPort("ttyUSB0"); // USB serial connection
-        port.setBaudRate(230400);
+        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
+        port.setBaudRate(115200);
+//        SerialPort port = SerialPort.getCommPort("ttyUSB0"); // USB serial connection
+//        port.setBaudRate(230400);
         port.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 1, 1);
         if (port.openPort() == false) {
             System.err.println("Unable to open the serial port. Exiting.");
@@ -44,52 +44,62 @@ public class Cube {
             String fftd = "";
             String tstamp = "";
             String hosts = "";
+            String cmark = "";
             try {
                 String line = s.nextLine();
                 String[] token = line.split(",");
 
                 if (token[0].equals("  1")) {
                     tstamp = token[11];
+                    cmark = token[12];
                     System.out.println(String.format("dtype = %3s  device = %s : %s", token[0], token[1], line, tstamp));
                     token[2] = "";
                 }
                 if (token[0].equals("  2")) {
                     System.out.println(String.format("dtype = %3s  device = %s cpu = %s host = %s : %s", token[0], token[1], token[2], token[6], line));
                     hosts = token[6];
+                    cmark = token[7];
                     token[6] = "";
+                    token[7] = "";
                 }
                 if (token[0].equals("  8")) {
                     System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
                     fftd = token[2];
+                    cmark = token[3];
                     token[2] = "";
+                    token[3] = "";
                 }
                 if (token[0].equals("  9")) {
                     System.out.println(String.format("dtype = %3s  device = %s hit high = %s : %s", token[0], token[1], token[2], line));
                     fftd = token[2];
+                    cmark = token[3];
                     token[2] = "";
+                    token[3] = "";
                 }
 
                 try {
-                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.1.1.172/", connConfig);
+                    Connection conn = DriverManager.getConnection("jdbc:mariadb://10.5.2.94/", connConfig);
 
-                    // Prepare INSERT Statement to Add IMU data
-                    try ( PreparedStatement prep = conn.prepareStatement(
-                            "INSERT INTO hits.imu (dtype, device, cpu, str, fft, tstamp, host) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                            Statement.RETURN_GENERATED_KEYS)) {
-                        // Add IMU packet data
-                        prep.setString(1, token[0]);
-                        prep.setString(2, token[1]);
-                        prep.setString(3, token[2]);
-                        prep.setString(4, line);
-                        prep.setString(5, fftd);
-                        prep.setString(6, tstamp);
-                        prep.setString(7, hosts);
-                        prep.addBatch();
+                    if (cmark.equals("IMU")) {
+                        // Prepare INSERT Statement to Add IMU data
+                        try ( PreparedStatement prep = conn.prepareStatement(
+                                "INSERT INTO hits.imu (dtype, device, cpu, str, fft, tstamp, host) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                Statement.RETURN_GENERATED_KEYS)) {
+                            // Add IMU packet data
+                            prep.setString(1, token[0]);
+                            prep.setString(2, token[1]);
+                            prep.setString(3, token[2]);
+                            prep.setString(4, line);
+                            prep.setString(5, fftd);
+                            prep.setString(6, tstamp);
+                            prep.setString(7, hosts);
+                            prep.addBatch();
 
-                        int[] updateCounts = prep.executeBatch();
-                        for (int count : updateCounts) {
-                            // Print Counts
+                            int[] updateCounts = prep.executeBatch();
+                            for (int count : updateCounts) {
+                                // Print Counts
 //                            System.out.println(count);
+                            }
                         }
                     }
                     conn.close();
