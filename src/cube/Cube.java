@@ -35,7 +35,7 @@ public class Cube {
 
         try {
             // Connect to the server
-            Socket socket = new Socket("10.1.1.238", 20108);
+            Socket socket = new Socket("192.168.0.7", 20108);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             // Read data from the IMU uart to ETH TCP server
@@ -90,7 +90,7 @@ public class Cube {
                     }
 
                     try {
-                        Connection conn = DriverManager.getConnection("jdbc:mariadb://10.1.1.172/", connConfig);
+                        Connection conn = DriverManager.getConnection("jdbc:mariadb://10.5.2.94/", connConfig);
 
                         if (cmark.equals("IMU")) {
                             // Prepare INSERT Statement to Add IMU data
