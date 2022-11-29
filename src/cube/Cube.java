@@ -6,12 +6,8 @@
 package cube;
 
 import java.util.Scanner;
-import com.fazecast.jSerialComm.SerialPort;
-
 import java.sql.*;
 import java.util.Properties;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.Socket;
 
 /**
@@ -22,35 +18,19 @@ public class Cube {
 
     public static void main(String[] args) {
 
-        //serial connection
-        SerialPort port = SerialPort.getCommPort("ttyACM0"); // USB serial connection
-        port.setBaudRate(115200);
-//        SerialPort port = SerialPort.getCommPort("ttyUSB0"); // USB serial connection
-//        port.setBaudRate(230400);
-        port.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 1, 1);
-        if (port.openPort() == false) {
-            System.err.println("Unable to open the serial port. Exiting.");
-            System.exit(1);
-        }
+        // source and dest IP configurations
+        String ttl_eth_host = "192.168.0.7";
+        String mysql_host = "jdbc:mariadb://10.5.2.94/";
 
         try {
-            // Connect to the server
-            Socket socket = new Socket("192.168.0.7", 20108);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Read data from the IMU uart to ETH TCP server
-            String sline = in.readLine();
-            Scanner ss = new Scanner(in.readLine());
-            while (sline != null) {
-                System.err.println(sline);
-                sline = in.readLine();
-            }
+            // Connect to the TTL to ETH server
+            Socket socket = new Socket(ttl_eth_host, 20108);
 
             Properties connConfig = new Properties();
             connConfig.setProperty("user", "minty");
             connConfig.setProperty("password", "");
 
-            Scanner s = new Scanner(port.getInputStream());
+            Scanner s = new Scanner(socket.getInputStream());
             System.err.println("Scanner running.");
             while (s.hasNextLine()) {
                 String fftd = "";
@@ -90,7 +70,7 @@ public class Cube {
                     }
 
                     try {
-                        Connection conn = DriverManager.getConnection("jdbc:mariadb://10.5.2.94/", connConfig);
+                        Connection conn = DriverManager.getConnection(mysql_host, connConfig);
 
                         if (cmark.equals("IMU")) {
                             // Prepare INSERT Statement to Add IMU data
@@ -121,15 +101,13 @@ public class Cube {
                         System.out.println("SQLState: " + ex.getSQLState());
                         System.out.println("VendorError: " + ex.getErrorCode());
                     }
-
                 } catch (Exception e) {
                 }
             }
             // Close our streams
-            in.close();
             socket.close();
             s.close();
-            System.err.println("Lost communication with the serial port. Exiting.");
+            System.err.println("Lost communication with the IMU socket. Exiting.");
             System.exit(1);
 
         } catch (Exception e) {
