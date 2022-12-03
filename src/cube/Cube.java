@@ -17,12 +17,10 @@ public class Cube {
     @SuppressWarnings("ConvertToTryWithResources")
     public static void main(String[] args) {
 
-        // source and dest IP configurations
-        String ttl_eth_host = "10.1.1.238";
+        // database IP configurations
         String mysql_host = "jdbc:mariadb://10.1.1.172/";
-
-//        String ttl_eth_host = "192.168.0.7";
 //        String mysql_host = "jdbc:mariadb://10.5.2.94/";
+
         Properties connConfig = new Properties();
         connConfig.setProperty("user", "minty");
         connConfig.setProperty("password", "");
@@ -40,7 +38,7 @@ public class Cube {
             rs = stmt.executeQuery(
                     "SELECT timestamp "
                     + "FROM imu "
-                    + "order by timestamp ");
+                    + "order by timestamp ASC");
 
             stmt.executeUpdate("DROP TABLE IF EXISTS vevent");
             stmt.executeUpdate(
@@ -52,7 +50,7 @@ public class Cube {
                     "INSERT INTO vevent (dataField) "
                     + "select (str) "
                     + "from imu "
-                    + "where dtype like '  1' AND fft > ' 8' LIMIT 20000", 
+                    + "where dtype like '  1' AND fft > ' 9' LIMIT 2000", 
                     Statement.RETURN_GENERATED_KEYS);
 
             conn.close();
