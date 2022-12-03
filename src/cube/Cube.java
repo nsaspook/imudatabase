@@ -24,7 +24,6 @@ public class Cube {
 
 //        String ttl_eth_host = "192.168.0.7";
 //        String mysql_host = "jdbc:mariadb://10.5.2.94/";
-
         try {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
@@ -32,6 +31,7 @@ public class Cube {
             Properties connConfig = new Properties();
             connConfig.setProperty("user", "minty");
             connConfig.setProperty("password", "");
+            String ffts = "";
 
             Scanner s = new Scanner(socket.getInputStream());
             System.err.println("Scanner running.");
@@ -49,6 +49,7 @@ public class Cube {
                         cmark = token[12];
                         System.out.println(String.format("dtype = %3s  device = %s : %s", token[0], token[1], line, tstamp));
                         token[2] = "";
+                        fftd = ffts;
                     }
                     if (token[0].equals("  2")) {
                         System.out.println(String.format("dtype = %3s  device = %s cpu = %s host = %s : %s", token[0], token[1], token[2], token[6], line));
@@ -60,6 +61,7 @@ public class Cube {
                     if (token[0].equals("  8")) {
                         System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
                         fftd = token[2];
+                        ffts = token[2];
                         cmark = token[3];
                         token[2] = "";
                         token[3] = "";
