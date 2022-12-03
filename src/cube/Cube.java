@@ -19,11 +19,11 @@ public class Cube {
     public static void main(String[] args) {
 
         // source and dest IP configurations
-        String ttl_eth_host = "10.1.1.238";
-        String mysql_host = "jdbc:mariadb://10.1.1.172/";
+//        String ttl_eth_host = "10.1.1.238";
+//        String mysql_host = "jdbc:mariadb://10.1.1.172/";
 
-//        String ttl_eth_host = "192.168.0.7";
-//        String mysql_host = "jdbc:mariadb://10.5.2.94/";
+        String ttl_eth_host = "192.168.0.7";
+        String mysql_host = "jdbc:mariadb://10.5.2.94/";
         try {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
