@@ -50,7 +50,7 @@ public class Cube {
                     "INSERT INTO vevent (dataField) "
                     + "select (str) "
                     + "from imu "
-                    + "where dtype like '  1' AND fft > ' 9' LIMIT 2000", 
+                    + "where dtype like '  1' AND fft > '  9' LIMIT 2000", 
                     Statement.RETURN_GENERATED_KEYS);
 
             conn.close();
