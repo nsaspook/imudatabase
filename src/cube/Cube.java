@@ -7,6 +7,7 @@ package cube;
 
 import java.sql.*;
 import java.util.Properties;
+import java.net.InetAddress;
 
 /**
  *
@@ -17,9 +18,26 @@ public class Cube {
     @SuppressWarnings("ConvertToTryWithResources")
     public static void main(String[] args) {
 
-        // database IP configurations
-        String mysql_host = "jdbc:mariadb://10.1.1.172/";
-//        String mysql_host = "jdbc:mariadb://10.5.2.94/";
+        String computerName = "NA";
+        String mysql_host = "NA";
+
+       // get the host name so we can config ip
+        try {
+            computerName = InetAddress.getLocalHost().getHostName();
+            System.err.println(computerName);
+        } catch (Exception e) {
+            System.err.println("Unable to get hostname. Exiting.");
+            System.exit(1);
+        }
+
+        // source and dest IP configurations by computer host name
+        if (computerName.equals("hpdesk")) {
+            mysql_host = "jdbc:mariadb://10.1.1.172/";
+        }
+
+        if (computerName.equals("newimp")) {
+            mysql_host = "jdbc:mariadb://10.5.2.94/";
+        }
 
         Properties connConfig = new Properties();
         connConfig.setProperty("user", "minty");
@@ -50,7 +68,7 @@ public class Cube {
                     "INSERT INTO vevent (dataField) "
                     + "select (str) "
                     + "from imu "
-                    + "where dtype like '  1' AND fft > '  9' LIMIT 2000", 
+                    + "where dtype like '  1' AND fft > '  9' LIMIT 2000",
                     Statement.RETURN_GENERATED_KEYS);
 
             conn.close();
