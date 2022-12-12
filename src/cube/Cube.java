@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.sql.*;
 import java.util.Properties;
 import java.net.Socket;
+import java.net.InetAddress;
 
 /**
  *
@@ -18,9 +19,25 @@ public class Cube {
 
     public static void main(String[] args) {
 
+        String computerName = "NA";
+        String ttl_eth_host = "NA";
+        String mysql_host = "NA";
+
+        try {
+            computerName = InetAddress.getLocalHost().getHostName();
+            System.err.println(computerName);
+        } catch (Exception e) {
+            System.err.println("Unable to get hostname. Exiting.");
+            System.exit(1);
+        }
+
         // source and dest IP configurations
-        String ttl_eth_host = "10.1.1.238";
-        String mysql_host = "jdbc:mariadb://10.1.1.172/";
+        if (computerName.equals("hpdesk")) {
+            ttl_eth_host = "10.1.1.238";
+            mysql_host = "jdbc:mariadb://10.1.1.172/";
+        }
+//        String ttl_eth_host = "10.1.1.238";
+//        String mysql_host = "jdbc:mariadb://10.1.1.172/";
 
 //        String ttl_eth_host = "192.168.0.7";
 //        String mysql_host = "jdbc:mariadb://10.5.2.94/";
@@ -52,14 +69,14 @@ public class Cube {
                         fftd = ffts;
                     }
                     if (token[0].equals("  2")) {
-                        System.out.println(String.format("dtype = %3s  device = %s cpu = %s host = %s : %s", token[0], token[1], token[2], token[6], line));
+//                        System.out.println(String.format("dtype = %3s  device = %s cpu = %s host = %s : %s", token[0], token[1], token[2], token[6], line));
                         hosts = token[6];
                         cmark = token[7];
                         token[6] = "";
                         token[7] = "";
                     }
                     if (token[0].equals("  8")) {
-                        System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
+//                        System.out.println(String.format("dtype = %3s  device = %s hit  low = %s : %s", token[0], token[1], token[2], line));
                         fftd = token[2];
                         ffts = token[2];
                         cmark = token[3];
@@ -67,7 +84,7 @@ public class Cube {
                         token[3] = "";
                     }
                     if (token[0].equals("  9")) {
-                        System.out.println(String.format("dtype = %3s  device = %s hit high = %s : %s", token[0], token[1], token[2], line));
+//                        System.out.println(String.format("dtype = %3s  device = %s hit high = %s : %s", token[0], token[1], token[2], line));
                         fftd = token[2];
                         cmark = token[3];
                         token[2] = "";
