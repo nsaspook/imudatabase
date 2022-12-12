@@ -23,6 +23,7 @@ public class Cube {
         String ttl_eth_host = "NA";
         String mysql_host = "NA";
 
+        // get the host name so we can config ip
         try {
             computerName = InetAddress.getLocalHost().getHostName();
             System.err.println(computerName);
@@ -31,16 +32,17 @@ public class Cube {
             System.exit(1);
         }
 
-        // source and dest IP configurations
+        // source and dest IP configurations by computer host name
         if (computerName.equals("hpdesk")) {
             ttl_eth_host = "10.1.1.238";
             mysql_host = "jdbc:mariadb://10.1.1.172/";
         }
-//        String ttl_eth_host = "10.1.1.238";
-//        String mysql_host = "jdbc:mariadb://10.1.1.172/";
 
-//        String ttl_eth_host = "192.168.0.7";
-//        String mysql_host = "jdbc:mariadb://10.5.2.94/";
+        if (computerName.equals("newimp")) {
+            ttl_eth_host = "192.168.0.7";
+            mysql_host = "jdbc:mariadb://10.5.2.94/";
+        }
+
         try {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
