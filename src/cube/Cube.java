@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * IMU CAN-FD sensor host commector client to sensor database
+ * 
+ * 
  */
 package cube;
 
@@ -13,7 +13,7 @@ import java.net.InetAddress;
 
 /**
  *
- * @author root
+ * @author nsaspook
  */
 public class Cube {
 
@@ -22,6 +22,8 @@ public class Cube {
         String computerName = "NA";
         String ttl_eth_host = "NA";
         String mysql_host = "NA";
+        // keep the connection open for the duration
+        Connection conn;
 
         // get the host name so we can config ip
         try {
@@ -47,11 +49,16 @@ public class Cube {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
 
+            // database access credentials
             Properties connConfig = new Properties();
             connConfig.setProperty("user", "minty");
             connConfig.setProperty("password", "");
+            // Connect to the mysql database server
+            conn = DriverManager.getConnection(mysql_host, connConfig);
+
             String ffts = "";
 
+            // grab data from the IMU host tcp server
             Scanner s = new Scanner(socket.getInputStream());
             System.err.println("Scanner running.");
             while (s.hasNextLine()) {
@@ -59,6 +66,7 @@ public class Cube {
                 String tstamp = "";
                 String hosts = "";
                 String cmark = "";
+                // parse to the commect type of database entry
                 try {
                     String line = s.nextLine();
                     String[] token = line.split(",");
@@ -94,7 +102,6 @@ public class Cube {
                     }
 
                     try {
-                        Connection conn = DriverManager.getConnection(mysql_host, connConfig);
 
                         if (cmark.equals("IMU")) {
                             // Prepare INSERT Statement to Add IMU data
@@ -118,7 +125,6 @@ public class Cube {
                                 }
                             }
                         }
-                        conn.close();
                     } catch (SQLException ex) {
                         // handle any errors
                         System.out.println("SQLException: " + ex.getMessage());
@@ -128,6 +134,8 @@ public class Cube {
                 } catch (Exception e) {
                 }
             }
+            // close the database
+            conn.close();
             // Close our streams
             socket.close();
             s.close();
