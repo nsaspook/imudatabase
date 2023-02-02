@@ -48,6 +48,8 @@ public class Cube {
         try {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
+            
+            socket.getOutputStream().write("L\r".getBytes("US-ASCII")); // or UTF-8 or any other applicable encoding...
 
             // database access credentials
             Properties connConfig = new Properties();
