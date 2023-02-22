@@ -41,7 +41,7 @@ public class Cube {
         }
 
         if (computerName.equals("newimp")) {
-            ttl_eth_host = "192.168.0.7";
+            ttl_eth_host = "10.5.2.60";
             mysql_host = "jdbc:mariadb://10.5.2.94/";
         }
 
@@ -49,7 +49,7 @@ public class Cube {
             // Connect to the TTL to ETH server
             Socket socket = new Socket(ttl_eth_host, 20108);
             // send IP address query to remote module
-            socket.getOutputStream().write("A\r".getBytes("US-ASCII")); // or UTF-8 or any other applicable encoding...
+            socket.getOutputStream().write("L\r".getBytes("US-ASCII")); // or UTF-8 or any other applicable encoding...
 
             // database access credentials
             Properties connConfig = new Properties();
